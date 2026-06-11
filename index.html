@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda de Contactos</title>
+    <style>
+        /* Estilos Generales e Inspirados en Sistemas de Gestión Clásicos */
+        body {
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            background-color: #dce6f0;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+            font-size: 13px;
+        }
+
+        /* Barra de Encabezado Principal */
+        header {
+            background-color: #1a3a5c;
+            color: #ffffff;
+            padding: 15px 20px;
+            font-size: 20px;
+            font-weight: bold;
+            border-bottom: 3px solid #2563a8;
+        }
+
+        header span {
+            vertical-align: middle;
+        }
+
+        /* Contenedor Principal Centrado */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+
+        /* Área de Notificaciones (Feedback) */
+        .alert {
+            padding: 10px 12px;
+            margin-bottom: 15px;
+            border: 1px solid;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .alert-success {
+            background-color: #e3f2fd;
+            border-color: #2563a8;
+            color: #1a3a5c;
+        }
+
+        .alert-error {
+            background-color: #fce4ec;
+            border-color: #c0392b;
+            color: #c0392b;
+        }
+
+        /* Panel del Formulario */
+        .panel {
+            border: 1px solid #2563a8;
+            border-radius: 3px;
+            background-color: #e8edf2;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background-color: #1a3a5c;
+            color: #ffffff;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 1px solid #2563a8;
+        }
+
+        .panel-body {
+            padding: 15px;
+        }
+
+        /* Formulario y Controles */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #1a3a5c;
+        }
+
+        .form-control {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 6px 8px;
+            border: 1px solid #b0bec5;
+            border-radius: 3px;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            font-size: 13px;
+            background-color: #ffffff;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #2563a8;
+            background-color: #fffde7; /* Sutil color de foco clásico */
+        }
+
+        /* Botón de Acción */
+        .btn {
+            background-color: #2563a8;
+            color: #ffffff;
+            border: 1px solid #1a3a5c;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: bold;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            cursor: pointer;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: #1a3a5c;
+        }
+
+        .btn:disabled {
+            background-color: #b0bec5;
+            border-color: #90a4ae;
+            cursor: not-allowed;
+        }
+
+        /* Panel de Listado / Tabla */
+        .table-container {
+            border: 1px solid #b0bec5;
+            border-radius: 3px;
+            background-color: #ffffff;
+            overflow: hidden;
+        }
+
+        .table-header-title {
+            background-color: #1a3a5c;
+            color: #ffffff;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 1px solid #b0bec5;
+        }
+
+        .contacts-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .contacts-table th {
+            background-color: #2563a8;
+            color: #ffffff;
+            padding: 10px 12px;
+            font-weight: bold;
+            border-bottom: 2px solid #1a3a5c;
+        }
+
+        .contacts-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #b0bec5;
+            color: #333333;
+        }
+
+        /* Filas alternas */
+        .contacts-table tbody tr:nth-child(even) {
+            background-color: #f0f5fa;
+        }
+
+        .contacts-table tbody tr:hover {
+            background-color: #e1f5fe; /* Efecto hover discreto de selección */
+        }
+
+        /* Estado de Carga / Mensajes de Tabla Vacía */
+        .table-status {
+            padding: 20px;
+            text-align: center;
+            font-style: italic;
+            color: #555555;
+            background-color: #ffffff;
+        }
+
+        /* Estilo de ayuda o nota al pie */
+        .footer-note {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 11px;
+            color: #78909c;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cabecera de Página -->
+    <header>
+        <span>📋 Agenda de Contactos</span>
+    </header>
+
+    <!-- Contenedor Principal -->
+    <div class="container">
+
+        <!-- Contenedor para Alertas Dinámicas -->
+        <div id="alert-container" style="display: none;"></div>
+
+        <!-- Formulario para Registrar Nuevo Contacto -->
+        <div class="panel">
+            <div class="panel-header">Agregar Nuevo Contacto</div>
+            <div class="panel-body">
+                <form id="contact-form" novalidate>
+                    <div class="form-group">
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" id="nombre" class="form-control" placeholder="Ej. Juan" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="apellido">Apellido:</label>
+                        <input type="text" id="apellido" class="form-control" placeholder="Ej. Pérez" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefono">Teléfono:</label>
+                        <input type="text" id="telefono" class="form-control" placeholder="Ej. 809-555-1234" required>
+                    </div>
+                    <button type="submit" id="submit-btn" class="btn">Agregar Contacto</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Listado de Contactos -->
+        <div class="table-container">
+            <div class="table-header-title">Contactos Registrados</div>
+            <table class="contacts-table" id="contacts-table">
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Nombre</th>
+                        <th style="width: 35%;">Apellido</th>
+                        <th style="width: 30%;">Teléfono</th>
+                    </tr>
+                </thead>
+                <tbody id="contacts-tbody">
+                    <!-- Las filas se insertarán aquí dinámicamente -->
+                </tbody>
+            </table>
+            <!-- Contenedor para estados como cargando, vacío o error -->
+            <div id="table-status-msg" class="table-status">Cargando contactos...</div>
+        </div>
+
+        <div class="footer-note">
+            Sistema de Gestión de Contactos &copy; 2026. Conectado al servicio raydelto.org.
+        </div>
+    </div>
+
+    <!-- Script de Lógica de la Aplicación -->
+    <script>
+        const API_URL = 'http://www.raydelto.org/agenda.php';
+        
+        // Elementos del DOM
+        const contactForm = document.getElementById('contact-form');
+        const nombreInput = document.getElementById('nombre');
+        const apellidoInput = document.getElementById('apellido');
+        const telefonoInput = document.getElementById('telefono');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        const contactsTbody = document.getElementById('contacts-tbody');
+        const tableStatusMsg = document.getElementById('table-status-msg');
+        const alertContainer = document.getElementById('alert-container');
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', () => {
+            loadContacts();
+        });
+
+        // Manejar el envío del formulario
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            submitContact();
+        });
+
+        /**
+         * Muestra un mensaje de alerta (éxito o error) al usuario.
+         * @param {string} message - Texto del mensaje.
+         * @param {string} type - Tipo de alerta ('success' o 'error').
+         */
+        function showAlert(message, type) {
+            alertContainer.style.display = 'block';
+            alertContainer.className = `alert alert-${type}`;
+            alertContainer.textContent = message;
+            
+            // Auto-ocultar después de 6 segundos si es un mensaje de éxito
+            if (type === 'success') {
+                setTimeout(() => {
+                    // Solo ocultar si sigue mostrando el mismo mensaje
+                    if (alertContainer.textContent === message) {
+                        alertContainer.style.display = 'none';
+                    }
+                }, 6000);
+            }
+        }
+
+        /**
+         * Oculta el contenedor de alertas.
+         */
+        function clearAlert() {
+            alertContainer.style.display = 'none';
+            alertContainer.textContent = '';
+        }
+
+        /**
+         * Obtiene la lista de contactos desde el servidor y actualiza la tabla.
+         */
+        async function loadContacts() {
+            // Mostrar indicador de carga en la tabla
+            contactsTbody.innerHTML = '';
+            tableStatusMsg.style.display = 'block';
+            tableStatusMsg.textContent = 'Cargando contactos...';
+
+            try {
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`Error en el servidor: ${response.status} ${response.statusText}`);
+                }
+
+                const contacts = await response.json();
+
+                if (!Array.isArray(contacts)) {
+                    throw new Error('El formato de datos devuelto por el servidor no es válido.');
+                }
+
+                if (contacts.length === 0) {
+                    tableStatusMsg.style.display = 'block';
+                    tableStatusMsg.textContent = 'No hay contactos registrados.';
+                    return;
+                }
+
+                // Ocultar mensaje de carga
+                tableStatusMsg.style.display = 'none';
+
+                // Renderizar contactos
+                contacts.forEach(contact => {
+                    const tr = document.createElement('tr');
+                    
+                    const tdNombre = document.createElement('td');
+                    tdNombre.textContent = contact.nombre || '';
+                    
+                    const tdApellido = document.createElement('td');
+                    tdApellido.textContent = contact.apellido || '';
+                    
+                    const tdTelefono = document.createElement('td');
+                    tdTelefono.textContent = contact.telefono || '';
+
+                    tr.appendChild(tdNombre);
+                    tr.appendChild(tdApellido);
+                    tr.appendChild(tdTelefono);
+
+                    contactsTbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error('Error al cargar contactos:', error);
+                tableStatusMsg.style.display = 'block';
+                tableStatusMsg.textContent = 'Error al cargar los contactos.';
+                showAlert('No se pudieron obtener los contactos del servidor. Verifique su conexión.', 'error');
+            }
+        }
+
+        /**
+         * Envía los datos del formulario al servidor.
+         */
+        async function submitContact() {
+            clearAlert();
+
+            // Obtener y limpiar valores
+            const nombre = nombreInput.value.trim();
+            const apellido = apellidoInput.value.trim();
+            const telefono = telefonoInput.value.trim();
+
+            // Validar que todos los campos estén llenos
+            if (!nombre || !apellido || !telefono) {
+                showAlert('Por favor, complete todos los campos obligatorios.', 'error');
+                return;
+            }
+
+            // Deshabilitar botón de envío y cambiar texto para feedback visual
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Guardando...';
+
+            const payload = {
+                nombre: nombre,
+                apellido: apellido,
+                telefono: telefono
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error en el envío: ${response.status} ${response.statusText}`);
+                }
+
+                // Limpiar el formulario en caso de éxito
+                contactForm.reset();
+
+                // Mostrar mensaje de éxito
+                showAlert('¡Contacto registrado exitosamente!', 'success');
+
+                // Recargar la lista automáticamente
+                await loadContacts();
+
+            } catch (error) {
+                console.error('Error al guardar contacto:', error);
+                showAlert('Ocurrió un error al intentar registrar el contacto. Inténtelo de nuevo.', 'error');
+            } finally {
+                // Habilitar botón de envío nuevamente
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Agregar Contacto';
+            }
+        }
+    </script>
+</body>
+</html>
